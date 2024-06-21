@@ -29,6 +29,8 @@ public:
                                                                   any_applicable_discount(any_applicable_discount),
                                                                   paid_cars(paid_cars)
     {}
+    const std::string& get_customer_id() const { return customer_id; }
+    const std::tuple<int, int, int>& get_date() const { return date; }
 };
 
 class record_list{
@@ -57,11 +59,35 @@ bill_t record_list::add_record(const std::string& record_id,
 }
 
 // apply sort on records
-void record_list::apply_sort_by(std::function<bool(const bill_t&, const bill_t&)> cmp){ }
+void record_list::apply_sort_by(std::function<bool(const bill_t&, const bill_t&)> cmp){
+    std::sort(records.begin(), records.end(), cmp);
+ }
 
 // try to use `record_list::apply_sort_on_records` before searching.
-bill_t record_list::find_record_by_customer_id(const std::string& customer_id){}
-bill_t record_list::find_record_by_date(const std::tuple<int, int, int> date){}
-std::vector<bill_t> record_list::find_records_by_date_range(const std::tuple<int, int, int> start_date, const std::tuple<int, int, int> end_date){}
+bill_t record_list::find_record_by_customer_id(const std::string& customer_id){
+    for (const auto& record : records) {
+        if (record.get_customer_id() == customer_id) {
+            return record;
+        }
+    }
+    throw std::runtime_error("Record not found");
+}
+bill_t record_list::find_record_by_date(const std::tuple<int, int, int> date){
+    for (const auto& record : records) {
+        if (record.get_date() == date) {
+            return record;
+        }
+    }
+    throw std::runtime_error("Record not found");
+}
+std::vector<bill_t> record_list::find_records_by_date_range(const std::tuple<int, int, int> start_date, const std::tuple<int, int, int> end_date){
+    std::vector<bill_t> result;
+    for (const auto& record : records) {
+        if (record.get_date() >= start_date && record.get_date() <= end_date) {
+            result.push_back(record);
+        }
+    }
+    return result;
+}
 
 #endif // RECORDING_HPP

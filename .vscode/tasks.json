@@ -1,0 +1,31 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "task g++",
+			"command": "D:\\mingw64\\bin\\g++.exe",
+			"args": [
+				"-g",	//g++ -g
+				"${file}",	//g++ -g main.cpp
+				"-o",	//g++ -g main.cpp -o
+				"${fileDirname}\\${fileBasenameNoExtension}.exe"	//g++ -g main.cpp -o main.exe
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"presentation": {
+				"panel": "shared"
+			}
+			
+	
+		}
+	]
+}
