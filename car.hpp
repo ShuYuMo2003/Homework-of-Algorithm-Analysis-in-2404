@@ -29,7 +29,17 @@ public:
                                        country_of_manufacture(country_of_manufacture),
                                        year_of_manufacture(year_of_manufacture),
                                        price_in_usd(price_in_usd)
-        {}
+    {}
+
+    const std::string& get_id() const { return car_id; }
+    const std::string& get_brand() const { return brand; }
+    const std::string& get_color() const { return color; }
+    const std::string& get_country_of_manufacture() const { return country_of_manufacture; }
+    int get_year_of_manufacture() const { return year_of_manufacture; }
+    double get_price() const { return price_in_usd; }
+    int get_sell_count() const { return sell_count; }
+
+    void increment_sell_count() { sell_count++; }
 };
 
 class car_list
@@ -55,7 +65,7 @@ public:
 
 
 
-// Implement the functions in `car_list`.
+// Implement the functions in car_list.
 void car_list::add_car(const std::string &car_id,
           const std::string &brand,
           const std::string &color,
@@ -79,4 +89,4 @@ void car_list::sell_car(const std::string car_id, const int& howMany) {}
 // 返回列表（？）
 car_t car_list::get_best_sell_car() const {}
 
-#endif // CAR_HPP
+#endif // CAR_HPP添加get方法
