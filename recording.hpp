@@ -1,12 +1,12 @@
 #ifndef RECORDING_HPP
 #define RECORDING_HPP
-
+#include <map>
 #include <string>
 #include <vector>
 #include <tuple>
 #include <stdexcept>
 #include <algorithm> // for std::lower_bound and std::upper_bound
-
+#include <iostream>
 #include "car.hpp"
 
 class bill_t {
@@ -43,7 +43,7 @@ public:
 
 class record_list {
     std::vector<bill_t> records;
-
+    std::map<std::string, int> sale_count; //记录某个品牌的总销售量
 public:
     bill_t add_record(const std::string& record_id,
                       const std::string& customer_name,
@@ -55,6 +55,11 @@ public:
     bill_t find_record_by_date(const std::tuple<int, int, int> date);
     std::vector<bill_t> find_records_by_date_range(const std::tuple<int, int, int> start_date, const std::tuple<int, int, int> end_date);
     std::vector<std::tuple<std::string, std::string, std::string, std::string, std::tuple<int, int, int>, double>> generate_purchase_report(const std::tuple<int, int, int>& start_date, const std::tuple<int, int, int>& end_date);
+    // 处理销量的方法
+    void add_sale(const std::string& product, int count);
+    int find_sale(const std::string& product) const;
+    void print_sales() const;
+    std::map<std::string, int> get_sale_count(){return sale_count;};
 };
 
 bill_t record_list::add_record(const std::string& record_id,
@@ -138,4 +143,27 @@ std::vector<std::tuple<std::string, std::string, std::string, std::string, std::
     return report;
 }
 
+// 处理销量的方法
+ // 添加或更新销售记录
+    void record_list::add_sale(const std::string& brand, int count) {
+        sale_count[brand] += count;
+    }
+
+    // 查找销售记录
+    int record_list::find_sale(const std::string& brand) const {
+        auto it = sale_count.find(brand);
+        if (it != sale_count.end()) {
+            return it->second;
+        } else {
+            std::cerr << "Product not found: " << brand << std::endl;
+            return 0; // 或者选择其他适当的返回值或抛出异常
+        }
+    }
+
+    // 打印所有销售记录
+    void record_list::print_sales() const {
+        for (const auto& pair : sale_count) {
+            std::cout << "Product: " << pair.first << ", Sales Count: " << pair.second << std::endl;
+        }
+    }
 #endif // RECORDING_HPP
