@@ -8,8 +8,6 @@
 #include <random>
 #include <ctime>
 
-#include "recording.hpp"
-
 class car_t
 {
     std::string car_id;
@@ -49,7 +47,7 @@ public:
 class car_list
 {
     std::vector<car_t> cars;
-    
+
     //Q7：通过ID,价格或者品牌进行归并排序
     void merge_sort(std::vector<car_t> &arr, int left, int right, std::function<bool(const car_t&, const car_t&)> cmp) const;
     void merge(std::vector<car_t> &arr, int left, int mid, int right, std::function<bool(const car_t&, const car_t&)> cmp) const;
@@ -68,14 +66,12 @@ public:
     car_t& find_car_by_id(const std::string car_id);
 
 
-    void sell_car(  
-                    const std::string &brand,
-                    const std::string &color,
-                    const std::string &country_of_manufacture,
-                    const int year_of_manufacture,
-                    const double price_in_usd,
-                    record_list& recordList
-                    );
+    void sell_car(const std::string &brand,
+                        const std::string &color,
+                        const std::string &country_of_manufacture,
+                        const int year_of_manufacture,
+                        const double price_in_usd
+                        );
 
     car_t get_best_sell_car() const;
 
@@ -84,7 +80,7 @@ public:
     //Q7：通过ID,价格或者品牌进行归并排序
     std::vector<car_t> list_all_cars_sort_by(std::function<bool(const car_t&, const car_t&)> cmp) const;
     //Q8: Bubble + Binary 找按品牌排序的最好销量车并展示
-    void search_best_selling_car_by_brand(record_list &recordList) const;
+    // void search_best_selling_car_by_brand(record_list &recordList) const;
 
 };
 
@@ -98,7 +94,7 @@ void car_list::add_car(const std::string &car_id,
           const int year_of_manufacture,
           const double price_in_usd)
 {
-    
+
     cars.push_back(car_t(car_id, brand, color, country_of_manufacture,
                 year_of_manufacture, price_in_usd));
 }
@@ -114,25 +110,24 @@ car_t& car_list::find_car_by_id(const std::string car_id) {
     throw std::invalid_argument("Car ID not found");
 }
 
-void car_list::sell_car(const std::string &brand,
-                        const std::string &color,
-                        const std::string &country_of_manufacture,
+void car_list::sell_car(const std::string& brand,
+                        const std::string& color,
+                        const std::string& country_of_manufacture,
                         const int year_of_manufacture,
-                        const double price_in_usd,
-                        record_list& recordList
+                        const double price_in_usd
                         ) {
-        std::mt19937 generator(static_cast<unsigned int>(std::time(0))); // 使用当前时间作为种子
-        std::uniform_int_distribution<int> distribution(1000000, 9999999); // 生成范围在1000000到9999999之间的随机数
-        int random_number = distribution(generator);
+    std::mt19937 generator(static_cast<unsigned int>(std::time(0))); // 使用当前时间作为种子
+    std::uniform_int_distribution<int> distribution(1000000, 9999999); // 生成范围在1000000到9999999之间的随机数
+    int random_number = distribution(generator);
 
-        std::string prefix = brand.substr(0, 3); // 获取品牌的前三位
-        std::string car_ID = prefix + std::to_string(random_number);
-        //添加汽车到汽车列表中
-        add_car(car_ID, brand, color, country_of_manufacture, year_of_manufacture, price_in_usd);
-        //添加销量到销售列表
-        recordList.add_sale(brand, 1);
-    }
-    
+    std::string prefix = brand.substr(0, 3); // 获取品牌的前三位
+    std::string car_ID = prefix + std::to_string(random_number);
+    //添加汽车到汽车列表中
+    add_car(car_ID, brand, color, country_of_manufacture, year_of_manufacture, price_in_usd);
+    //添加销量到销售列表
+    // recordList.add_sale(brand, 1);
+}
+
 //Q6 :展示未排序的汽车列表
 std::vector<car_t> car_list::list_all_cars() const {
     return cars;
@@ -235,16 +230,16 @@ void car_list::merge(std::vector<car_t> &arr, int left, int mid, int right, std:
 // }
 
 //Q8: Bubble + Binary 找按品牌排序的最好销量车
- void car_list::search_best_selling_car_by_brand(record_list &recordList) const {
-    std::map<std::string, int> sale_count = recordList.get_sale_count();
-    std::vector<std::pair<std::string, int>> vec(sale_count.begin(), sale_count.end());
-    // 先按冒泡排序得到不同品牌的销量顺序排序
-    bubble_sort_by_selling(vec);
-    // 再二分查找得到销量最大的品牌和对应销量
-    
-    std::pair<std::string, int> bestSeller = binary_search_best_selling_car(vec);
-    std::cout << "The best seller is " << bestSeller.first << " with " << bestSeller.second << " sales." << std::endl;
- };
+//  void car_list::search_best_selling_car_by_brand(record_list &recordList) const {
+//     std::map<std::string, int> sale_count = recordList.get_sale_count();
+//     std::vector<std::pair<std::string, int>> vec(sale_count.begin(), sale_count.end());
+//     // 先按冒泡排序得到不同品牌的销量顺序排序
+//     bubble_sort_by_selling(vec);
+//     // 再二分查找得到销量最大的品牌和对应销量
+
+//     std::pair<std::string, int> bestSeller = binary_search_best_selling_car(vec);
+//     std::cout << "The best seller is " << bestSeller.first << " with " << bestSeller.second << " sales." << std::endl;
+//  };
 // 对map转换的pair进行冒泡排序
  void car_list::bubble_sort_by_selling(std::vector<std::pair<std::string, int>>& vec) const{
     int n = vec.size();
@@ -267,7 +262,7 @@ void car_list::merge(std::vector<car_t> &arr, int left, int mid, int right, std:
 std::pair<std::string, int> car_list::binary_search_best_selling_car(const std::vector<std::pair<std::string, int>>& vec) const {
 
     if (vec.empty()) {
-        return {"", 0}; 
+        return {"", 0};
     }
     int left = 0;
     int right = vec.size() - 1;

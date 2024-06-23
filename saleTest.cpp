@@ -1,4 +1,5 @@
 #include <iostream>
+#include "car.hpp"
 #include "recording.hpp"
 
 int main() {
@@ -20,7 +21,7 @@ int main() {
     std::cout << "All sales records:" << std::endl;
     records.print_sales();
 
-    
+
     std::cout << "Press Enter to exit..." << std::endl;
     std::cin.get();
     return 0;
