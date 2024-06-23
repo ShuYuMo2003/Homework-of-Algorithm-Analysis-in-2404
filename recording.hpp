@@ -44,6 +44,9 @@ public:
 class record_list {
     std::vector<bill_t> records;
     std::map<std::string, int> sale_count; //记录某个品牌的总销售量
+    //Q8: Bubble + Binary 找按品牌排序的最好销量车
+    void bubble_sort_by_selling(std::vector<std::pair<std::string, int>>& vec) const;
+    std::pair<std::string, int> binary_search_best_selling_car(const std::vector<std::pair<std::string, int>>& vec) const;
 public:
     bill_t add_record(const std::string& record_id,
                       const std::string& customer_name,
@@ -57,9 +60,12 @@ public:
     std::vector<std::tuple<std::string, std::string, std::string, std::string, std::tuple<int, int, int>, double>> generate_purchase_report(const std::tuple<int, int, int>& start_date, const std::tuple<int, int, int>& end_date);
     // 处理销量的方法
     void add_sale(const std::string& product, int count);
+    void add_sale(const std::string& product);
     int find_sale(const std::string& product) const;
     void print_sales() const;
     std::map<std::string, int> get_sale_count(){return sale_count;};
+    //Q8：Bubble + Binary 找按品牌排序的最好销量车
+    void search_best_selling_car_by_brand() const;
 };
 
 bill_t record_list::add_record(const std::string& record_id,
@@ -148,6 +154,9 @@ std::vector<std::tuple<std::string, std::string, std::string, std::string, std::
     void record_list::add_sale(const std::string& brand, int count) {
         sale_count[brand] += count;
     }
+     void record_list::add_sale(const std::string& brand) {
+        sale_count[brand] += 1;
+    }
 
     // 查找销售记录
     int record_list::find_sale(const std::string& brand) const {
@@ -165,5 +174,53 @@ std::vector<std::tuple<std::string, std::string, std::string, std::string, std::
         for (const auto& pair : sale_count) {
             std::cout << "Product: " << pair.first << ", Sales Count: " << pair.second << std::endl;
         }
+    }
+
+    //Q8: Bubble + Binary 找按品牌排序的最好销量车
+    void record_list::search_best_selling_car_by_brand() const {
+        std::vector<std::pair<std::string, int>> vec(sale_count.begin(), sale_count.end());
+        // 先按冒泡排序得到不同品牌的销量顺序排序
+        bubble_sort_by_selling(vec);
+        // 再二分查找得到销量最大的品牌和对应销量
+
+        std::pair<std::string, int> bestSeller = binary_search_best_selling_car(vec);
+        std::cout << "The best seller is " << bestSeller.first << " with " << bestSeller.second << " sales." << std::endl;
+    };
+    //对map转换的pair进行冒泡排序
+    void record_list::bubble_sort_by_selling(std::vector<std::pair<std::string, int>>& vec) const{
+        int n = vec.size();
+        bool swapped;
+        for (int i = 0; i < n - 1; ++i) {
+            swapped = false;
+            for (int j = 0; j < n - i - 1; ++j) {
+                if (vec[j].second > vec[j + 1].second) {
+                    // 交换元素
+                    std::swap(vec[j], vec[j + 1]);
+                    swapped = true;
+                }
+            }
+            // 如果本轮没有发生交换，说明已经有序
+            if (!swapped) break;
+        }
+    }
+    // 二分查找函数
+    std::pair<std::string, int> record_list::binary_search_best_selling_car(const std::vector<std::pair<std::string, int>>& vec) const {
+
+        if (vec.empty()) {
+            return {"", 0};
+        }
+        int left = 0;
+        int right = vec.size() - 1;
+        int mid;
+        while (left < right) {
+            mid = left + (right - left) / 2;
+            if (vec[mid].second < vec[right].second) {
+                left = mid + 1;
+            } else {
+                right = mid;
+            }
+        }
+        // 返回最大值对应的 pair
+        return vec[right];
     }
 #endif // RECORDING_HPP
