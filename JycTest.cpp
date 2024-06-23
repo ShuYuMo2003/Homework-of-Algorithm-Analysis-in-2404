@@ -4,6 +4,8 @@
 #include "recording.hpp"  
 #include "user.hpp"
 int main() {
+    //创建随机数种子
+    srand(time(0));
     //创建记录表
     car_list cl;
     record_list recordList;

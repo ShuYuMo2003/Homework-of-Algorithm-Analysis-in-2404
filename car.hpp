@@ -111,25 +111,22 @@ void car_list::add_car(const std::string &car_id,
 }
 
 car_t& car_list::find_car_by_id(const std::string car_id) {
-        for (auto& car : cars)
-    {
-        if (car.get_id() == car_id)
-        {
-            return car;
+        for (car_t& car : cars){
+            if (car.get_id() == car_id)
+            {
+                return car;
+            }
         }
-    }
     throw std::invalid_argument("Car ID not found");
 }
 // 随机数生成器
 int car_list::generateRandom() const{
-    unsigned seed = std::chrono::steady_clock::now().time_since_epoch().count();
-    std::mt19937 generator(seed);
-    std::uniform_int_distribution<int> distribution(1000000, 9999999);
-    return distribution(generator);
+    //srand(time(0)); // 以当前时间为种子,在main中调用
+    return 100000000 + rand() % 900000000;
 }
 // 检查重复ID
 bool isDuplicateID(const std::vector<car_t>& cars, const std::string& newID) {
-    for (const auto& car : cars) {
+    for (const car_t& car : cars) {
         if (car.get_id() == newID) {
             return true; 
         }
@@ -159,7 +156,7 @@ void car_list::sell_car(const std::string& brand,
 //Q6 :展示未排序的汽车列表
    void car_list::list_all_cars() const {
     std::cout << "Unsorted car list:" << std::endl;
-        for(const auto& car : cars) {
+        for(const car_t& car : cars) {
             car.print_car_inf();
             std::cout << "--------------------------------------------------" << std::endl;
         }
