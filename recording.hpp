@@ -117,7 +117,11 @@ std::vector<bill_t> record_list::find_records_by_date_range(const std::tuple<int
     return result;
 }
 //二分查找以及快速排序
-std::vector<std::tuple<std::string, std::string, std::string, std::string, std::tuple<int, int, int>, double>> record_list::generate_purchase_report(const std::tuple<int, int, int>& start_date, const std::tuple<int, int, int>& end_date) {
+std::vector<
+    std::tuple<std::string, std::string, std::string, std::string, std::tuple<int, int, int>, double>>
+    record_list::generate_purchase_report(
+        const std::tuple<int, int, int>& start_date, const std::tuple<int, int, int>& end_date
+    ) {
     std::vector<std::tuple<std::string, std::string, std::string, std::string, std::tuple<int, int, int>, double>> report;
 
     auto lower = std::lower_bound(records.begin(), records.end(), start_date,

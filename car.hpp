@@ -24,9 +24,10 @@ public:
     std::string country_of_manufacture;
     int year_of_manufacture;
     double price_in_usd;
+    int number_of_sold;
     // int sell_count = 0;
 
-    car_t() : car_id("null") {};
+    car_t() : car_id("null"), number_of_sold(0) {};
     car_t(const std::string &car_id,
           const std::string &brand,
           const std::string &color,
@@ -37,7 +38,8 @@ public:
                                        color(color),
                                        country_of_manufacture(country_of_manufacture),
                                        year_of_manufacture(year_of_manufacture),
-                                       price_in_usd(price_in_usd)
+                                       price_in_usd(price_in_usd),
+                                       number_of_sold(0)
     {}
 
     const std::string& get_id() const { return car_id; }
@@ -48,7 +50,7 @@ public:
     double get_price() const { return price_in_usd; }
     std::string get_string_price() {
         std::ostringstream stream;
-        stream << std::fixed << std::setprecision(2) << price_in_usd;
+        stream << std::fixed << std::setprecision(4) << price_in_usd;
         return stream.str();
     }
 
@@ -58,27 +60,17 @@ public:
         car_id = prefix + std::to_string(dis(random_generator));
     }
 
-    // //展示汽车的所有信息
-    // void print_car_inf() const {
-    //     std::ostringstream oss;
-    //     oss << "Car ID: " << car_id << "\n"
-    //         << "Brand: " << brand << "\n"
-    //         << "Color: " << color << "\n"
-    //         << "Country of Manufacture: " << country_of_manufacture << "\n"
-    //         << "Year of Manufacture: " << year_of_manufacture << "\n"
-    //         << "Price in USD: " << price_in_usd;
-    //     std::cout<<oss.str()<<std::endl;
-    // }
+    int get_number_of_sold() { return number_of_sold; }
+    void increase_sold(int delta) { number_of_sold += delta; }
 };
 
 class car_list
 {
     std::vector<car_t> cars;
-    // int generateRandom() const;
-    //Q7：通过ID,价格或者品牌进行归并排序
-    void merge_sort(std::vector<car_t> &arr, int left, int right, std::function<bool(const car_t&, const car_t&)> cmp) const;
-    void merge(std::vector<car_t> &arr, int left, int mid, int right, std::function<bool(const car_t&, const car_t&)> cmp) const;
-
+    void merge_sort(std::vector<car_t> &arr, int left, int right,
+        std::function<bool(const car_t&, const car_t&)> cmp) const;
+    void merge(std::vector<car_t> &arr, int left, int mid, int right,
+        std::function<bool(const car_t&, const car_t&)> cmp) const;
 
 public:
     car_t null_car_instance;
@@ -96,13 +88,17 @@ public:
 
     car_t get_best_sell_car() const;
 
-    //Q6 :展示未排序的汽车列表
-    void list_all_cars() const;
-    //Q7：通过ID,价格或者品牌进行归并排序
     std::vector<car_t> get_all_cars() const {return cars;};
     std::vector<car_t> list_all_cars_sort_by(std::function<bool(const car_t&, const car_t&)> cmp) const;
+    std::vector<car_t> list_all_cars() {
+        return list_all_cars_sort_by([](const car_t &lhs, const car_t &rhs) {
+            return 1;
+        });
+    }
+    void sort_by(std::function<bool(const car_t&, const car_t&)> cmp) {
+        cars = list_all_cars_sort_by(cmp);
+    }
 };
-
 
 
 // Implement the functions in car_list.
@@ -122,20 +118,6 @@ car_t& car_list::find_car_by_id(const std::string car_id) {
     return null_car_instance;
 }
 
-// 随机数生成器
-// int car_list::generateRandom() const{
-//     //srand(time(0)); // 以当前时间为种子,在main中调用
-//     return 100000000 + rand() % 900000000;
-// }
-// 检查重复ID
-bool isDuplicateID(const std::vector<car_t>& cars, const std::string& newID) {
-    for (const car_t& car : cars) {
-        if (car.get_id() == newID) {
-            return true;
-        }
-    }
-    return false;
-}
 /*
 void car_list::sell_car(const std::string& brand,
                         const std::string& color,
@@ -157,15 +139,6 @@ void car_list::sell_car(const std::string& brand,
     // recordList.add_sale(brand, 1);
 }
 */
-
-//Q6 :展示未排序的汽车列表
-// void car_list::list_all_cars() const {
-// std::cout << "Unsorted car list:" << std::endl;
-//     for(const car_t& car : cars) {
-//         car.print_car_inf();
-//         std::cout << "--------------------------------------------------" << std::endl;
-//     }
-// };
 
 // std::function 期望传递一个函数对象，可以传递一个 lambda 表达式。
 // 用于定义对象的比较规则，例如按照价格升序排序。
@@ -200,25 +173,18 @@ void car_list::merge(std::vector<car_t> &arr, int left, int mid, int right, std:
 
     while (i < n1 && j < n2) {
         if (cmp(L[i], R[j])) {
-            arr[k] = L[i];
-            i++;
+            arr[k++] = L[i++];
         } else {
-            arr[k] = R[j];
-            j++;
+            arr[k++] = R[j++];
         }
-        k++;
     }
 
     while (i < n1) {
-        arr[k] = L[i];
-        i++;
-        k++;
+        arr[k++] = L[i++];
     }
 
     while (j < n2) {
-        arr[k] = R[j];
-        j++;
-        k++;
+        arr[k++] = R[j++];
     }
 }
 

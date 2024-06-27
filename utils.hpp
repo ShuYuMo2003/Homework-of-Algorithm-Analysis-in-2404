@@ -7,6 +7,26 @@
 #include <iomanip>
 #include <vector>
 
+void print_table(std::vector<std::string> & header, std::vector<std::vector<std::string>> & data);
+
+void print_car_t_list(std::vector<car_t> _cars) {
+    static std::vector<std::string> header = {
+        "Car ID", "Brand", "Color", "Country of Manufacture", "Year of Manufacture", "Price in USD"
+    };
+    std::vector<std::vector<std::string>> data;
+    for (auto &car : _cars) {
+        data.push_back({
+            car.get_id(),
+            car.get_brand(),
+            car.get_color(),
+            car.get_country_of_manufacture(),
+            std::to_string(car.get_year_of_manufacture()),
+            car.get_string_price()
+        });
+    }
+    print_table(header, data);
+}
+
 void print_table(std::vector<std::string> & header, std::vector<std::vector<std::string>> & data) {
     std::vector<int> placeholder_width(header.size(), 0);
     for (int i = 0; i < static_cast<int>(header.size()); i++) {
