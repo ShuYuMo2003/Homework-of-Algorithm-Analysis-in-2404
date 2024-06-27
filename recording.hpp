@@ -5,7 +5,6 @@
 #include <vector>
 #include <tuple>
 #include <stdexcept>
-#include <algorithm> // for std::lower_bound and std::upper_bound
 #include <iostream>
 #include "car.hpp"
 
@@ -25,12 +24,14 @@ public:
            const std::string& customer_id,
            const double& total_price,
            const std::string& any_applicable_discount,
-           const std::vector<std::pair<car_t, int>>& paid_cars) : record_id(record_id),
-                                                                  customer_name(customer_name),
-                                                                  customer_id(customer_id),
-                                                                  total_price(total_price),
-                                                                  any_applicable_discount(any_applicable_discount),
-                                                                  paid_cars(paid_cars)
+           const std::vector<std::pair<car_t, int>>& paid_cars,
+           const std::tuple<int, int, int>& date) : record_id(record_id),
+                                                    customer_name(customer_name),
+                                                    customer_id(customer_id),
+                                                    total_price(total_price),
+                                                    any_applicable_discount(any_applicable_discount),
+                                                    paid_cars(paid_cars),
+                                                    date(date)
     {}
 
     const std::string& get_customer_id() const { return customer_id; }
@@ -53,7 +54,8 @@ public:
                       const std::string& customer_id,
                       const double& total_price,
                       const std::string& any_applicable_discount,
-                      const std::vector<std::pair<car_t, int>>& paid_cars);
+                      const std::vector<std::pair<car_t, int>>& paid_cars,
+                      const std::tuple<int, int, int>& date);
     bill_t find_record_by_customer_id(const std::string& customer_id);
     bill_t find_record_by_date(const std::tuple<int, int, int> date);
     std::vector<bill_t> find_records_by_date_range(const std::tuple<int, int, int> start_date, const std::tuple<int, int, int> end_date);
@@ -63,7 +65,7 @@ public:
     void add_sale(const std::string& product);
     int find_sale(const std::string& product) const;
     void print_sales() const;
-    std::map<std::string, int> get_sale_count(){return sale_count;};
+    std::map<std::string, int> get_sale_count() const { return sale_count; };
     //Q8：Bubble + Binary 找按品牌排序的最好销量车
     void search_best_selling_car_by_brand() const;
 };
@@ -73,11 +75,13 @@ bill_t record_list::add_record(const std::string& record_id,
                                const std::string& customer_id,
                                const double& total_price,
                                const std::string& any_applicable_discount,
-                               const std::vector<std::pair<car_t, int>>& paid_cars) {
-    bill_t bill = bill_t(record_id, customer_name, customer_id, total_price, any_applicable_discount, paid_cars);
+                               const std::vector<std::pair<car_t, int>>& paid_cars,
+                               const std::tuple<int, int, int>& date) {
+    bill_t bill = bill_t(record_id, customer_name, customer_id, total_price, any_applicable_discount, paid_cars, date);
     records.push_back(bill);
     return bill;
 }
+
 //线性查找
 bill_t record_list::find_record_by_customer_id(const std::string& customer_id) {
     for (const auto& record : records) {
@@ -87,6 +91,7 @@ bill_t record_list::find_record_by_customer_id(const std::string& customer_id) {
     }
     throw std::runtime_error("Record not found");
 }
+
 //线性查找
 bill_t record_list::find_record_by_date(const std::tuple<int, int, int> date) {
     for (const auto& record : records) {
@@ -96,27 +101,62 @@ bill_t record_list::find_record_by_date(const std::tuple<int, int, int> date) {
     }
     throw std::runtime_error("Record not found");
 }
-//二分查找
-std::vector<bill_t> record_list::find_records_by_date_range(const std::tuple<int, int, int> start_date, const std::tuple<int, int, int> end_date) {
-    std::vector<bill_t> result;
 
-    auto lower = std::lower_bound(records.begin(), records.end(), start_date,
-                                  [](const bill_t& bill, const std::tuple<int, int, int>& start_date) {
-                                      return bill.get_date() < start_date;
-                                  });
-
-    auto upper = std::upper_bound(records.begin(), records.end(), end_date,
-                                  [](const std::tuple<int, int, int>& end_date, const bill_t& bill) {
-                                      return end_date < bill.get_date();
-                                  });
-
-    for (auto it = lower; it != upper; ++it) {
-        result.push_back(*it);
+// lower_bound 实现
+std::vector<bill_t>::iterator lower_bound(std::vector<bill_t>::iterator first, 
+                                          std::vector<bill_t>::iterator last,
+                                          const std::tuple<int, int, int>& start_date) {
+    while (first < last) {
+        auto middle = first + (last - first) / 2;
+        if (middle->get_date() < start_date) {
+            first = middle + 1;
+        } else {
+            last = middle;
+        }
     }
-
-    return result;
+    return first;
 }
-//二分查找以及快速排序
+
+// upper_bound 实现
+std::vector<bill_t>::iterator upper_bound(std::vector<bill_t>::iterator first, 
+                                          std::vector<bill_t>::iterator last,
+                                          const std::tuple<int, int, int>& end_date) {
+    while (first < last) {
+        auto middle = first + (last - first) / 2;
+        if (end_date < middle->get_date()) {
+            last = middle;
+        } else {
+            first = middle + 1;
+        }
+    }
+    return first;
+}
+
+//快速排序
+void quicksort(std::vector<bill_t>::iterator first, std::vector<bill_t>::iterator last) {
+    if (first < last - 1) {
+        auto pivot = partition(first, last);
+        quicksort(first, pivot);
+        quicksort(pivot + 1, last);
+    }
+}
+
+std::vector<bill_t>::iterator partition(std::vector<bill_t>::iterator first, std::vector<bill_t>::iterator last) {
+    auto pivot = first + (last - first) / 2;
+    auto pivot_value = pivot->get_car_price();
+    std::iter_swap(pivot, last - 1);
+    auto store = first;
+    for (auto it = first; it < last - 1; ++it) {
+        if (it->get_car_price() < pivot_value) {
+            std::iter_swap(it, store);
+            ++store;
+        }
+    }
+    std::iter_swap(store, last - 1);
+    return store;
+}
+
+//生成report
 std::vector<
     std::tuple<std::string, std::string, std::string, std::string, std::tuple<int, int, int>, double>>
     record_list::generate_purchase_report(
@@ -124,28 +164,20 @@ std::vector<
     ) {
     std::vector<std::tuple<std::string, std::string, std::string, std::string, std::tuple<int, int, int>, double>> report;
 
-    auto lower = std::lower_bound(records.begin(), records.end(), start_date,
-                                  [](const bill_t& bill, const std::tuple<int, int, int>& start_date) {
-                                      return bill.get_date() < start_date;
-                                  });
+    auto lower = lower_bound(records.begin(), records.end(), start_date);
+    auto upper = upper_bound(records.begin(), records.end(), end_date);
 
-    auto upper = std::upper_bound(records.begin(), records.end(), end_date,
-                                  [](const std::tuple<int, int, int>& end_date, const bill_t& bill) {
-                                      return end_date < bill.get_date();
-                                  });
-
-    std::sort(lower, upper, [](const bill_t& a, const bill_t& b) {
-        return a.get_car_price() < b.get_car_price();
-    });
+    std::vector<bill_t> sorted_records(lower, upper);
+    quicksort(sorted_records.begin(), sorted_records.end());
 
     double total_price = 0.0;
-    for (auto it = lower; it != upper; ++it) {
-        total_price += it->get_car_price();
+    for (const auto& record : sorted_records) {
+        total_price += record.get_car_price();
     }
 
-    for (auto it = lower; it != upper; ++it) {
-        report.push_back(std::make_tuple(it->get_car_id(), it->get_car_brand(), it->get_car_color(),
-                                         it->get_customer_id(), it->get_date(), it->get_car_price()));
+    for (const auto& record : sorted_records) {
+        report.push_back(std::make_tuple(record.get_car_id(), record.get_car_brand(), record.get_car_color(),
+                                         record.get_customer_id(), record.get_date(), record.get_car_price()));
     }
 
     report.push_back(std::make_tuple("", "", "", "Total Price of Sold Cars", std::tuple<int, int, int>(), total_price));
