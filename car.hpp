@@ -78,6 +78,7 @@ public:
     void add_car(const car_t &car);
 
     car_t& find_car_by_id(const std::string car_id);
+    void remove_car(const std::string& car_id);
 
     void sell_car(const std::string &brand,
                         const std::string &color,
@@ -108,6 +109,14 @@ void car_list::add_car(const car_t &car)
         assert(e_car.get_id() != car.get_id());
     }
     cars.push_back(car);
+}
+void car_list::remove_car(const std::string& car_id) {
+    auto it = std::remove_if(cars.begin(), cars.end(), [&car_id](const car_t& car) {
+        return car.get_id() == car_id;
+    });
+    if (it != cars.end()) {
+        cars.erase(it, cars.end());
+    }
 }
 
 car_t& car_list::find_car_by_id(const std::string car_id) {

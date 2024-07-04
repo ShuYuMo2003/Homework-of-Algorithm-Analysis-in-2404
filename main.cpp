@@ -186,6 +186,35 @@ void search_for_a_car_by_id_handler() {
         print_car_t_list(_cars);
     }
 }
+void track_the_number_of_cars_sold_handler() {
+    std::cout << "Input the car id for which you want to track the number of cars sold: ";
+    std::string car_id;
+    std::cin >> car_id;
+    auto car = cars.find_car_by_id(car_id);
+    if(cars.is_null_car(car)) {
+        std::cout << "Not Found Such Car." << std::endl;
+    } else {
+        std::cout << "Number of cars sold for car " << car_id << ": " << car.get_number_of_sold() << std::endl;
+    }
+}
+void remove_a_car_record_handler() {
+    std::cout << "Input the car id that you want to remove: ";
+    std::string car_id;
+    std::cin >> car_id;
+    auto car = cars.find_car_by_id(car_id);
+    if(cars.is_null_car(car)) {
+        std::cout << "Not Found Such Car." << std::endl;
+    } else {
+        cars.remove_car(car_id);
+        std::cout << "Car " << car_id << " removed successfully." << std::endl;
+    }
+}
+
+void sort_cars_by_best_selling_brand_handler() {
+    auto best_selling_car = cars.get_best_sell_car();
+    std::vector<car_t> best_selling_cars = {best_selling_car};
+    print_car_t_list(best_selling_cars);
+}
 
 
 int main() {
@@ -213,13 +242,13 @@ int main() {
                 display_car_list_sorted_by_brand_or_price();
                 break;
             case op_track_the_number_of_cars_sold:
-                std::cout << "Track the number of cars sold\n";
+                track_the_number_of_cars_sold_handler();
                 break;
             case op_remove_a_car_record:
-                std::cout << "Remove a car record\n";
+                 remove_a_car_record_handler();
                 break;
             case op_sort_carts_by_best_selling_brand:
-                std::cout << "Sort carts by best-selling brand\n";
+                sort_cars_by_best_selling_brand_handler();
                 break;
             default:
                 std::cout << "Invalid option\n";
