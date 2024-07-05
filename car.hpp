@@ -24,10 +24,8 @@ public:
     std::string country_of_manufacture;
     int year_of_manufacture;
     double price_in_usd;
-    int number_of_sold;
-    // int sell_count = 0;
 
-    car_t() : car_id("null"), number_of_sold(0) {};
+    car_t() : car_id("null") {};
     car_t(const std::string &car_id,
           const std::string &brand,
           const std::string &color,
@@ -38,8 +36,7 @@ public:
                                        color(color),
                                        country_of_manufacture(country_of_manufacture),
                                        year_of_manufacture(year_of_manufacture),
-                                       price_in_usd(price_in_usd),
-                                       number_of_sold(0)
+                                       price_in_usd(price_in_usd)
     {}
 
     const std::string& get_id() const { return car_id; }
@@ -59,9 +56,6 @@ public:
         std::uniform_int_distribution<int> dis(int(1e6), int(1e7) - 1);
         car_id = prefix + std::to_string(dis(random_generator));
     }
-
-    int get_number_of_sold() { return number_of_sold; }
-    void increase_sold(int delta) { number_of_sold += delta; }
 };
 
 class car_list
@@ -80,16 +74,10 @@ public:
     car_t& find_car_by_id(const std::string car_id);
     void remove_car(const std::string& car_id);
 
-    void sell_car(const std::string &brand,
-                        const std::string &color,
-                        const std::string &country_of_manufacture,
-                        const int year_of_manufacture,
-                        const double price_in_usd
-                        );
+    void sell_car(const std::string car_id);
 
     car_t get_best_sell_car() const;
 
-    std::vector<car_t> get_all_cars() const {return cars;};
     std::vector<car_t> list_all_cars_sort_by(std::function<bool(const car_t&, const car_t&)> cmp) const;
     std::vector<car_t> list_all_cars() {
         return list_all_cars_sort_by([](const car_t &lhs, const car_t &rhs) {
@@ -100,7 +88,6 @@ public:
         cars = list_all_cars_sort_by(cmp);
     }
 };
-
 
 // Implement the functions in car_list.
 void car_list::add_car(const car_t &car)
@@ -127,32 +114,6 @@ car_t& car_list::find_car_by_id(const std::string car_id) {
     return null_car_instance;
 }
 
-/*
-void car_list::sell_car(const std::string& brand,
-                        const std::string& color,
-                        const std::string& country_of_manufacture,
-                        const int year_of_manufacture,
-                        const double price_in_usd
-                        ) {
-
-
-    std::string prefix = brand.substr(0, 3); // 获取品牌的前三位
-    std::string car_ID;
-    //ID查重
-    do {
-        car_ID = prefix + std::to_string(generateRandom());
-    } while (isDuplicateID(cars, car_ID));
-    //添加汽车到汽车列表中
-    add_car(car_ID, brand, color, country_of_manufacture, year_of_manufacture, price_in_usd);
-    //添加销量到销售列表
-    // recordList.add_sale(brand, 1);
-}
-*/
-
-// std::function 期望传递一个函数对象，可以传递一个 lambda 表达式。
-// 用于定义对象的比较规则，例如按照价格升序排序。
-// 可以重写为其他的实现方式。
-//Q7：通过ID,价格或者品牌进行归并排序
 std::vector<car_t> car_list::list_all_cars_sort_by(std::function<bool(const car_t&, const car_t&)> cmp) const {
     std::vector<car_t> sorted_cars = cars;
     merge_sort(sorted_cars, 0, sorted_cars.size() - 1, cmp);
@@ -196,25 +157,5 @@ void car_list::merge(std::vector<car_t> &arr, int left, int mid, int right, std:
         arr[k++] = R[j++];
     }
 }
-
-
-// // 返回列表（？）
-// car_t car_list::search_best_selling_car_by_brand(const std::string &brand,record_list &recordList) const {
-//     std::map<std::string, int> sale_count = recordList.get_sale_count();
-
-//     bubble_sort_by_selling(sorted_cars);
-//     int index = binary_search_best_selling_car(sorted_cars, brand);
-//     if (index != -1) {
-//         return sorted_cars[index];
-//     } else {
-//         throw std::runtime_error("Brand not found");
-//     }
-// }
-
-car_t car_list::get_best_sell_car() const {
-    // TODO: Impl.
-    return cars[0];
-}
-
 
 #endif // CAR_HPP添加get方法

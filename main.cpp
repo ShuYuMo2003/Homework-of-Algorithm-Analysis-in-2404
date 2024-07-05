@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <random>
+#include <set>
 
 #include "car.hpp"
 #include "recording.hpp"
@@ -15,29 +16,39 @@ std::mt19937 random_generator(time(nullptr));
 enum OPT {
     op_add_new_car = 1,
     op_modify_car_data = 2,
-    op_display_all_cars = 3,
+    op_remove_a_car = 3,
+
     op_sort_cars_by_brand_or_price = 4,
-    op_display_cars_list_by_brand_or_price = 5,
-    op_search_for_a_car_by_its_unique_id = 6,
-    op_track_the_number_of_cars_sold = 7,
-    op_remove_a_car_record = 8,
-    op_sort_carts_by_best_selling_brand = 9,
-    op_exit = 10
+    op_search_for_a_car_by_its_unique_id = 5,
+    op_search_best_selling_brand = 6,
+    op_display_all_cars = 7,
+    op_display_cars_list_by_brand_or_price = 8,
+    op_track_the_number_of_cars_sold = 9,
+
+    op_create_new_bill_to_purchase_cars = 10,
+    op_search_bills_by_customerID_or_Date = 11,
+    op_search_bills_by_date_range = 12,
+    op_exit = 13
 };
 
 const std::string menu_prompt = (
-    "+------------------ Car  Menu ------------------+\n"
-    "| 1. Add new car.                               |\n"
-    "| 2. Modify car data.                           |\n"
-    "| 3. Display all cars                           |\n"
-    "| 4. Sort cars by brand or price.               |\n"
-    "| 5. Display sorted cars list by brand or price.|\n"
-    "| 6. Search for a car by its unique ID.         |\n"
-    "| 7. Track the number of cars sold.             |\n"
-    "| 8. Remoce a car record.                       |\n"
-    "| 9. Sort carts by best-selling brand.          |\n"
-    "| 10. Exit.                                     |\n"
-    "+-----------------------------------------------+\n"
+    "+---------------------- Car Menu ----------------------+\n"
+    "| 1. Add a new car.                                    |\n"
+    "| 2. Modify car data.                                  |\n"
+    "| 3. Remove a car.                                     |\n"
+    "+------------------------------------------------------+\n"
+    "| 4. Sort cars by brand or price.                      |\n"
+    "| 5. Search car by its unique ID.                      |\n"
+    "| 6. Search best-selling brand.                        |\n"
+    "| 7. Display all cars                                  |\n"
+    "| 8. Display sorted cars list by brand price or id.    |\n"
+    "| 9. Track the number of the car sold.                 |\n"
+    "+------------------------------------------------------+\n"
+    "| 10. Create new bill to purchase cars.                |\n"
+    "| 11. Search bills by `customerID` or `Date`.          |\n"
+    "| 12. Search bills by date range.                      |\n"
+    "| 13. Exit.                                            |\n"
+    "+------------------------------------------------------+\n"
 );
 
 int read_in_option() {
@@ -137,7 +148,6 @@ void modify_car_data_handler() {
     cars.find_car_by_id(car_id) = target;
 }
 
-
 void display_all_cars_handler() {
     print_car_t_list(cars.list_all_cars());
 }
@@ -159,16 +169,20 @@ void sort_cars_by_brand_or_price_handler() {
 }
 
 void display_car_list_sorted_by_brand_or_price() {
-    std::cout << " + ? by brand/price: ";
+    std::cout << " + ? by brand/price/id: ";
     std::string opt; std::cin >> opt;
     std::vector<car_t> _cars;
     if(opt[0] == 'b') {
         _cars = cars.list_all_cars_sort_by([](const car_t & lhs, const car_t & rhs) -> bool{
             return lhs.get_brand() < rhs.get_brand();
         });
-    } else {
+    } else if(opt[0] == 'p'){
         _cars = cars.list_all_cars_sort_by([](const car_t & lhs, const car_t & rhs) -> bool{
             return lhs.get_price() < rhs.get_price();
+        });
+    } else {
+        _cars = cars.list_all_cars_sort_by([](const car_t & lhs, const car_t & rhs) -> bool{
+            return lhs.get_id() < rhs.get_id();
         });
     }
     print_car_t_list(_cars);
@@ -178,7 +192,6 @@ void search_for_a_car_by_id_handler() {
     std::cout << " + Unique Id: ";
     std::string id; std::cin >> id;
     auto car = cars.find_car_by_id(id);
-    // print the header
     if(cars.is_null_car(car)) {
         std::cout << "Not Found Such Car." << std::endl;
     } else {
@@ -186,6 +199,7 @@ void search_for_a_car_by_id_handler() {
         print_car_t_list(_cars);
     }
 }
+
 void track_the_number_of_cars_sold_handler() {
     std::cout << "Input the car id for which you want to track the number of cars sold: ";
     std::string car_id;
@@ -194,10 +208,11 @@ void track_the_number_of_cars_sold_handler() {
     if(cars.is_null_car(car)) {
         std::cout << "Not Found Such Car." << std::endl;
     } else {
-        std::cout << "Number of cars sold for car " << car_id << ": " << car.get_number_of_sold() << std::endl;
+        print_items({"Car ID", "Number of Cars Sold"}, {car.get_id(), std::to_string(records.get_car_sold_by_brandname(car.get_brand()))});
     }
 }
-void remove_a_car_record_handler() {
+
+void remove_a_car_handler() {
     std::cout << "Input the car id that you want to remove: ";
     std::string car_id;
     std::cin >> car_id;
@@ -211,11 +226,83 @@ void remove_a_car_record_handler() {
 }
 
 void sort_cars_by_best_selling_brand_handler() {
-    auto best_selling_car = cars.get_best_sell_car();
-    std::vector<car_t> best_selling_cars = {best_selling_car};
-    print_car_t_list(best_selling_cars);
+    std::set<std::string> brands;
+    for(auto & car : cars.list_all_cars()) {
+        brands.insert(car.get_brand());
+    }
+    std::vector<std::string> brand_list(brands.begin(), brands.end());
+    auto best_selling_brand = records.search_best_selling_car_by_brand(brand_list);
+    print_items({"Brand", "Number of Cars Sold"}, {best_selling_brand.first, std::to_string(best_selling_brand.second)});
 }
 
+void create_new_bill_to_purchase_cars_handler() {
+    std::cout << "Please input the information of the bill" << std::endl;
+    bill_t bill;
+    bill.self_generate_record_id(random_generator);
+    std::cout << " + Customer ID: ";
+    std::cin >> bill.customer_id;
+    std::cout << " + Customer Name: ";
+    std::cin >> bill.customer_name;
+    std::cout << " + Customer Name: ";
+
+    std::cout << " + Car Id: ";
+    std::string car_id;
+    std::cin >> car_id;
+    auto car = cars.find_car_by_id(car_id);
+    if (cars.is_null_car(car)) {
+        std::cout << "Not Found Such Car." << std::endl;
+        return;
+    }
+    bill.paid_cars = car;
+
+    std::cout << " + How many cars you want to buy: ";
+    std::cin >> bill.number_of_sold;
+
+    std::cout << " +  Date(as format `YY mm dd`, eg: `2024 7 6`): ";
+    std::cin >> std::get<0>(bill.date) >> std::get<1>(bill.date) >> std::get<2>(bill.date);
+
+    std::cout << " + Any applicable discount: ";
+    std::cin >> bill.any_applicable_discount;
+
+    bill.compute_price();
+
+    records.add_record(bill);
+}
+
+void search_bills_by_customerID_or_Date_handler() {
+    std::cout << " + Search by `customerID` or `Date`? ";
+    std::string opt; std::cin >> opt;
+    bill_t bill;
+    if (opt[0] == 'c') {
+        std::cout << " + Input the customer ID: ";
+        std::string customer_id;
+        std::cin >> customer_id;
+        bill = records.find_record_by_customer_id(customer_id);
+    } else {
+        std::cout << " + Input the date(as format `YY mm dd`, eg: `2024 7 6`): ";
+        std::tuple<int, int, int> date;
+        std::cin >> std::get<0>(date) >> std::get<1>(date) >> std::get<2>(date);
+        bill = records.find_record_by_date(date);
+    }
+    if(records.is_non_bill_instance(bill)) {
+        std::cout << "Not Found Such Bill." << std::endl;
+    } else {
+        std::vector<bill_t> _bills = {bill};
+        print_bill_t_list(_bills);
+    }
+}
+
+void search_bills_by_date_range_handler() {
+    std::tuple<int, int, int> date1, date2;
+    std::cout << " + Input the lower date range(as format `YY mm dd`, eg: `2024 7 6`): ";
+    std::cin >> std::get<0>(date1) >> std::get<1>(date1) >> std::get<2>(date1);
+    std::cout << " + Input the upper date range(as format `YY mm dd`, eg: `2024 7 6`): ";
+    std::cin >> std::get<0>(date2) >> std::get<1>(date2) >> std::get<2>(date2);
+
+    auto bills = records.generate_purchase_report_by_date_range(date1, date2);
+    print_bill_t_list(bills.first);
+    std::cout << "Total Bills' Price: " << bills.second << std::endl;
+}
 
 int main() {
     int current_option;
@@ -223,20 +310,30 @@ int main() {
         (current_option = read_in_option()) != op_exit) {
 
         switch(current_option) {
+// menu part 1 BEGIN
             case op_add_new_car:
                 add_new_car_handler();
                 break;
             case op_modify_car_data:
                 modify_car_data_handler();
                 break;
-            case op_display_all_cars:
-                display_all_cars_handler();
+            case op_remove_a_car:
+                remove_a_car_handler();
                 break;
+// menu part 1 END
+
+// menu part 2 BEGIN
             case op_sort_cars_by_brand_or_price:
                 sort_cars_by_brand_or_price_handler();
                 break;
             case op_search_for_a_car_by_its_unique_id:
                 search_for_a_car_by_id_handler();
+                break;
+            case op_search_best_selling_brand:
+                sort_cars_by_best_selling_brand_handler();
+                break;
+            case op_display_all_cars:
+                display_all_cars_handler();
                 break;
             case op_display_cars_list_by_brand_or_price:
                 display_car_list_sorted_by_brand_or_price();
@@ -244,16 +341,26 @@ int main() {
             case op_track_the_number_of_cars_sold:
                 track_the_number_of_cars_sold_handler();
                 break;
-            case op_remove_a_car_record:
-                remove_a_car_record_handler();
+// menu part 2 END
+
+// menu part 3 BEGIN
+            case op_create_new_bill_to_purchase_cars:
+                create_new_bill_to_purchase_cars_handler();
                 break;
-            case op_sort_carts_by_best_selling_brand:
-                sort_cars_by_best_selling_brand_handler();
+            case op_search_bills_by_customerID_or_Date:
+                search_bills_by_customerID_or_Date_handler();
+                break;
+            case op_search_bills_by_date_range:
+                search_bills_by_date_range_handler();
+                break;
+// menu part 3 END
+            case op_exit:
                 break;
             default:
                 std::cout << "Invalid option\n";
                 break;
         }
+        std::cout << "\n======================== END OF OUTPUT ========================\n" << std::endl;
     }
     std::cout << "Bye!" << std::endl;
     return 0;
