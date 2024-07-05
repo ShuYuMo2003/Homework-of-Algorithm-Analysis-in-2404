@@ -245,7 +245,7 @@ int main() {
                 track_the_number_of_cars_sold_handler();
                 break;
             case op_remove_a_car_record:
-                 remove_a_car_record_handler();
+                remove_a_car_record_handler();
                 break;
             case op_sort_carts_by_best_selling_brand:
                 sort_cars_by_best_selling_brand_handler();

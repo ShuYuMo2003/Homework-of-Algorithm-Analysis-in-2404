@@ -103,7 +103,7 @@ bill_t record_list::find_record_by_date(const std::tuple<int, int, int> date) {
 }
 
 // lower_bound 实现
-std::vector<bill_t>::iterator lower_bound(std::vector<bill_t>::iterator first, 
+std::vector<bill_t>::iterator lower_bound(std::vector<bill_t>::iterator first,
                                           std::vector<bill_t>::iterator last,
                                           const std::tuple<int, int, int>& start_date) {
     while (first < last) {
@@ -118,7 +118,7 @@ std::vector<bill_t>::iterator lower_bound(std::vector<bill_t>::iterator first,
 }
 
 // upper_bound 实现
-std::vector<bill_t>::iterator upper_bound(std::vector<bill_t>::iterator first, 
+std::vector<bill_t>::iterator upper_bound(std::vector<bill_t>::iterator first,
                                           std::vector<bill_t>::iterator last,
                                           const std::tuple<int, int, int>& end_date) {
     while (first < last) {
@@ -132,18 +132,10 @@ std::vector<bill_t>::iterator upper_bound(std::vector<bill_t>::iterator first,
     return first;
 }
 
-//快速排序
-void quicksort(std::vector<bill_t>::iterator first, std::vector<bill_t>::iterator last) {
-    if (first < last - 1) {
-        auto pivot = partition(first, last);
-        quicksort(first, pivot);
-        quicksort(pivot + 1, last);
-    }
-}
-
-std::vector<bill_t>::iterator partition(std::vector<bill_t>::iterator first, std::vector<bill_t>::iterator last) {
+std::vector<bill_t>::iterator partition(std::vector<bill_t>::iterator & first, std::vector<bill_t>::iterator & last) {
     auto pivot = first + (last - first) / 2;
     auto pivot_value = pivot->get_car_price();
+    // auto tight_last_bound = last - 1;
     std::iter_swap(pivot, last - 1);
     auto store = first;
     for (auto it = first; it < last - 1; ++it) {
@@ -154,6 +146,15 @@ std::vector<bill_t>::iterator partition(std::vector<bill_t>::iterator first, std
     }
     std::iter_swap(store, last - 1);
     return store;
+}
+
+//快速排序
+void quicksort(std::vector<bill_t>::iterator first, std::vector<bill_t>::iterator last) {
+    if (first < last - 1) {
+        auto pivot = partition(first, last);
+        quicksort(first, pivot);
+        quicksort(pivot + 1, last);
+    }
 }
 
 //生成report

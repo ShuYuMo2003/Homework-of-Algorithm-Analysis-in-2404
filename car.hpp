@@ -211,6 +211,10 @@ void car_list::merge(std::vector<car_t> &arr, int left, int mid, int right, std:
 //     }
 // }
 
+car_t car_list::get_best_sell_car() const {
+    // TODO: Impl.
+    return cars[0];
+}
 
 
 #endif // CAR_HPP添加get方法
