@@ -10,7 +10,8 @@
 car_list cars;
 record_list records;
 
-std::mt19937 random_generator(time(nullptr));
+// fixed seed for reproducibility in debugging.
+std::mt19937 random_generator((unsigned int)'ytq');
 
 
 enum OPT {
@@ -243,7 +244,6 @@ void create_new_bill_to_purchase_cars_handler() {
     std::cin >> bill.customer_id;
     std::cout << " + Customer Name: ";
     std::cin >> bill.customer_name;
-    std::cout << " + Customer Name: ";
 
     std::cout << " + Car Id: ";
     std::string car_id;

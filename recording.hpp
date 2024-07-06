@@ -179,13 +179,13 @@ void record_list::add_sale(const std::string& brand, int count) {
 
 std::pair<std::string, int> record_list::search_best_selling_car_by_brand(std::vector<std::string> brands) {
     bubble_sort_brand_sale_pair_by_sale();
-    int maxSold = 0;
+    int maxSold = -1;
     std::string maxSoldBrand = "";
     for(auto brand : brands) {
-        std::cout << "Checking brand: " << brand << "\n";
+        // std::cout << "Checking brand: " << brand << "\n";
         int sold = get_car_sold_by_brandname(brand);
         if(sold > maxSold) {
-            sold = maxSold;
+            maxSold = sold;
             maxSoldBrand = brand;
         }
     }
@@ -209,13 +209,15 @@ void record_list::bubble_sort_brand_sale_pair_by_sale() {
 
 int& record_list::get_car_sold_by_brandname(std::string brandname) {
     int left = 0;
-    int right = sale_count.size() - 1;
+    int right = static_cast<int>(sale_count.size()) - 1;
     int ans = -1;
     int mid;
     while (left < right) {
+        // std::cout << left << " " << right << "\n";
         mid = left + (right - left) / 2;
         if (sale_count[mid].first == brandname) {
             ans = mid;
+            break;
         } else if (sale_count[mid].first < brandname) {
             left = mid + 1;
         } else {
@@ -223,9 +225,8 @@ int& record_list::get_car_sold_by_brandname(std::string brandname) {
         }
     }
     if (ans == -1) {
-        sale_count.push_back(std::make_pair(brandname, 0));
-        ans = sale_count.size() - 1;
-        bubble_sort_brand_sale_pair_by_sale();
+        sale_count.insert(sale_count.begin(), std::make_pair(brandname, 0));
+        ans = 0;
     }
     return sale_count[ans].second;
 }
