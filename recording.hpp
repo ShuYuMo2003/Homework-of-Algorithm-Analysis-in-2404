@@ -236,7 +236,7 @@ int& record_list::get_car_sold_by_brandname(std::string brandname) {
     int right = static_cast<int>(sale_count.size()) - 1;
     int ans = -1;
     int mid;
-    while (left < right) {
+    while (left <= right) {
         // std::cout << left << " " << right << "\n";
         mid = left + (right - left) / 2;
         if (sale_count[mid].first == brandname) {
