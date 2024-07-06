@@ -29,7 +29,8 @@ enum OPT {
     op_create_new_bill_to_purchase_cars = 10,
     op_search_bills_by_customerID_or_Date = 11,
     op_search_bills_by_date_range = 12,
-    op_exit = 13
+    op_display_all_bills = 13,
+    op_exit = 14
 };
 
 const std::string menu_prompt = (
@@ -48,14 +49,27 @@ const std::string menu_prompt = (
     "| 10. Create new bill to purchase cars.                |\n"
     "| 11. Search bills by `customerID` or `Date`.          |\n"
     "| 12. Search bills by date range.                      |\n"
-    "| 13. Exit.                                            |\n"
+    "| 13. Display all bills.                               |\n"
+    "| 14. Exit.                                            |\n"
     "+------------------------------------------------------+\n"
 );
 
 int read_in_option() {
-    std::cout << ">> ";
-    int opt; std::cin >> opt;
-    return opt;
+    while(true) {
+        std::cout << ">> ";
+        std::string line;
+        try {
+            std::getline(std::cin, line);
+            if(!line.size()) continue;
+            int opt = std::stoi(line);
+            return opt;
+        } catch (const std::invalid_argument& e) {
+            std::cerr << "Invalid input\n";
+        } catch (const std::out_of_range& e) {
+            std::cerr << "Invalid input\n";
+        }
+    }
+    return -1;
 }
 
 void add_new_car_handler() {
@@ -270,7 +284,7 @@ void create_new_bill_to_purchase_cars_handler() {
 }
 
 void search_bills_by_customerID_or_Date_handler() {
-    std::cout << " + Search by `customerID` or `Date`? ";
+    std::cout << " + Search by `customerID`(c) or `Date`(d)? ";
     std::string opt; std::cin >> opt;
     bill_t bill;
     if (opt[0] == 'c') {
@@ -302,6 +316,10 @@ void search_bills_by_date_range_handler() {
     auto bills = records.generate_purchase_report_by_date_range(date1, date2);
     print_bill_t_list(bills.first);
     std::cout << "Total Bills' Price: " << bills.second << std::endl;
+}
+
+void display_all_bills_handler() {
+    print_bill_t_list(records.get_records());
 }
 
 int main() {
@@ -352,6 +370,9 @@ int main() {
                 break;
             case op_search_bills_by_date_range:
                 search_bills_by_date_range_handler();
+                break;
+            case op_display_all_bills:
+                display_all_bills_handler();
                 break;
 // menu part 3 END
             case op_exit:

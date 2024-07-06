@@ -8,6 +8,10 @@
 #include <iostream>
 #include "car.hpp"
 
+void print_date(const std::tuple<int, int, int>& date) {
+    std::cout << std::get<0>(date) << "/" << std::get<1>(date) << "/" << std::get<2>(date);
+}
+
 class bill_t {
 public:
 
@@ -54,6 +58,7 @@ public:
     void compute_price() {
         total_price = paid_cars.get_price() * number_of_sold;
     }
+    double get_total_price() const { return total_price; }
 };
 
 class record_list {
@@ -81,6 +86,7 @@ public:
     int& get_car_sold_by_brandname(std::string brandname);
     std::pair<std::string, int> search_best_selling_car_by_brand(std::vector<std::string> brands);
     void bubble_sort_brand_sale_pair_by_sale();
+    std::vector<bill_t>& get_records() { return records; }
 };
 
 bill_t record_list::find_record_by_customer_id(const std::string& customer_id) {
@@ -129,27 +135,34 @@ std::vector<bill_t>::iterator upper_bound(std::vector<bill_t>::iterator first,
     return first;
 }
 
-std::vector<bill_t>::iterator partition(std::vector<bill_t>::iterator & first, std::vector<bill_t>::iterator & last) {
+std::vector<bill_t>::iterator partition(std::vector<bill_t>::iterator & first, std::vector<bill_t>::iterator & last,
+                                        std::function<bool(const bill_t&, const bill_t&)> cmp) {
     auto pivot = first + (last - first) / 2;
-    auto pivot_value = pivot->get_car_price();
-    // auto tight_last_bound = last - 1;
+    auto pivot_value = *pivot;
+    // std::cout << "Pivot: "; print_date(pivot->get_date()); std::cout << std::endl;
     std::iter_swap(pivot, last - 1);
     auto store = first;
     for (auto it = first; it < last - 1; ++it) {
-        if (it->get_car_price() < pivot_value) {
+        if (cmp(*it, pivot_value)) {
             std::iter_swap(it, store);
             ++store;
         }
     }
     std::iter_swap(store, last - 1);
+    // for(auto it = first; it < last; ++it) {
+    //     print_date(it->get_date());
+    //     std::cout << std::endl;
+    // }
+    // std::cout << std::endl;
     return store;
 }
 
-void quicksort(std::vector<bill_t>::iterator first, std::vector<bill_t>::iterator last) {
+void quicksort(std::vector<bill_t>::iterator first, std::vector<bill_t>::iterator last,
+                std::function<bool(const bill_t&, const bill_t&)> cmp) {
     if (first < last - 1) {
-        auto pivot = partition(first, last);
-        quicksort(first, pivot);
-        quicksort(pivot + 1, last);
+        auto pivot = partition(first, last, cmp);
+        quicksort(first, pivot, cmp);
+        quicksort(pivot + 1, last, cmp);
     }
 }
 
@@ -158,15 +171,26 @@ std::pair<std::vector<bill_t>, double>
         const std::tuple<int, int, int>& start_date, const std::tuple<int, int, int>& end_date
     ) {
 
+    quicksort(records.begin(), records.end(), [](const bill_t& a, const bill_t& b) {
+        return a.get_date() < b.get_date();
+    });
+
+    // for (const auto& record : records) {
+    //     std::cout << std::get<0>(record.get_date()) << std::get<1>(record.get_date()) << std::get<2>(record.get_date()) << std::endl;
+    // }
+
     auto lower = lower_bound(records.begin(), records.end(), start_date);
     auto upper = upper_bound(records.begin(), records.end(), end_date);
 
     std::vector<bill_t> sorted_records(lower, upper);
-    quicksort(sorted_records.begin(), sorted_records.end());
+    quicksort(sorted_records.begin(), sorted_records.end(), [](const bill_t& a, const bill_t& b) {
+        return a.get_total_price() < b.get_total_price();
+    });
 
     double total_price = 0.0;
     for (const auto& record : sorted_records) {
-        total_price += record.get_car_price();
+        total_price += record.get_total_price();
+        // std::cout << record.get_total_price() << std::endl;
     }
 
     return make_pair(sorted_records, total_price);
