@@ -1,14 +1,40 @@
 #include <iostream>
 #include <string>
 #include <random>
+#include <fstream>
 #include <set>
 
 #include "car.hpp"
 #include "recording.hpp"
+#include "user.hpp"
 #include "utils.hpp"
 
 car_list cars;
 record_list records;
+user_list users = ([]{
+    std::ifstream file("user.txt");
+    if (!file.is_open()) {
+        std::cout << " Not Found User File, Created a new one" << std::endl;
+        std::ofstream out("user.txt");
+        out << "admin admin" << std::endl;
+        out.flush();
+        out.close();
+        file.open("user.txt");
+    }
+
+    if(!file.is_open()) {
+        std::cerr << "Failed to open user file." << std::endl;
+        exit(1);
+    }
+
+    user_list _users;
+    std::string username, password;
+    while(file >> username >> password) {
+        _users.add_customer(username, password);
+    }
+
+    return _users;
+})();
 
 // fixed seed for reproducibility in debugging.
 std::mt19937 random_generator((unsigned int)'ytq');
@@ -53,6 +79,22 @@ const std::string menu_prompt = (
     "| 14. Exit.                                            |\n"
     "+------------------------------------------------------+\n"
 );
+
+bool login(){
+    std::cerr << "--- For debugging purpose, the default username and password is `admin` ---\n" << std::endl;
+    std::string username, password;
+    std::cout << "Please input your username: ";
+    std::cin >> username;
+    std::cout << "Please input your password: ";
+    std::cin >> password;
+    if(users.isAuthenticated(username, password)){
+        std::cout << "Login successfully. Hello, " << username << std::endl;
+        return true;
+    } else {
+        std::cout << "Invalid username or password, please try again." << std::endl;
+        return false;
+    }
+}
 
 int read_in_option() {
     while(true) {
@@ -323,6 +365,8 @@ void display_all_bills_handler() {
 }
 
 int main() {
+    while(!login()) ;
+
     int current_option;
     while((std::cout << menu_prompt),
         (current_option = read_in_option()) != op_exit) {
